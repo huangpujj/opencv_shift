@@ -1,4 +1,4 @@
 ﻿  picture_shift.cpp
-C:\Users\huang\Desktop\VS_repos\picture_shift\picture_shift.cpp(29,12): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
-C:\Users\huang\Desktop\VS_repos\picture_shift\picture_shift.cpp(30,13): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
-  picture_shift.vcxproj -> C:\Users\huang\Desktop\VS_repos\picture_shift\x64\Debug\picture_shift.exe
+C:\Users\huang\Desktop\VS_repos\opencv_shift\picture_shift.cpp(29,12): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+C:\Users\huang\Desktop\VS_repos\opencv_shift\picture_shift.cpp(30,13): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+  picture_shift.vcxproj -> C:\Users\huang\Desktop\VS_repos\opencv_shift\x64\Debug\picture_shift.exe
