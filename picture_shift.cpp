@@ -18,7 +18,6 @@ int main()
 {
 	VideoCapture capture;
 	capture.open(0); // 打开摄像头
-	//capture.open("C:\\Users\\huang\\Desktop\\VS_repos\\videos\\sample2.mp4");// 打开视频
 	if (!capture.isOpened())
 	{
 		cout << "open camera failed. " << endl;
@@ -26,9 +25,6 @@ int main()
 	}
 
 	Mat img, imgGray;
-	int width = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-	int height = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
-	cv::VideoWriter writer("C:\\Users\\huang\\Desktop\\VS_repos\\videos\\sample2.avi", CV_FOURCC('M', 'J', 'P', 'G'), 34, Size(width, height));
 	while (1)
 	{	
 		
@@ -46,24 +42,9 @@ int main()
 		{
 			imgGray = img;
 		}
-		/*for (int i = img.rows-1 ; i > 0; i--) {
-			if (i <= 100) {
-				img2.row(i) = 0;
-			}
-			else {
-				img2.row(i) = img.row(i);
-				if(i == 101){
-					cout << "copy:" << endl;
-					cout << img2.row(i) << endl;
-					cout << "original " << endl;
-					cout << img.row(i) << endl;
-				}
-			}
-		}*/
 		translateImg(img, 50, 50);
-		writer.write(img);
 		imshow("Cameral shifting", img); // 显示
-		if (waitKey(1) > 0)		// delay ms 等待按键退出
+		if (waitKey(1) == 27)		// delay ms 等待按键退出
 		{
 			break;
 		}
