@@ -36,6 +36,7 @@ int main()
 		return -1;
 	}
 
+
 	Mat img,imgGray,img1,imgGray1,temp,temp1,temp2,dst,dst1;
 	int i = 0;
 	while (1)
@@ -68,37 +69,36 @@ int main()
 
 		Mat descriptors1, descriptors2;
 		Ptr<ORB> orb = ORB::create();
-		orb->detect(imgGray, keypoints);
-		orb->detect(imgGray1, keypoints1);
+		orb->detect(img, keypoints);
+		orb->detect(img1, keypoints1);
 
-		orb->compute(imgGray, keypoints, descriptors1);
-		orb->compute(imgGray1, keypoints1, descriptors2);
+		orb->compute(img, keypoints, descriptors1);
+		orb->compute(img1, keypoints1, descriptors2);
 
 		Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
 		vector< DMatch> matches;
 		matcher->match(descriptors1, descriptors2, matches);
 
-		cout << matches.size() << endl;
+		cout << "The matched pointed : " << matches.size() << endl;
 
-		drawKeypoints(imgGray,keypoints,temp,-1, DrawMatchesFlags::DEFAULT);
-		drawKeypoints(imgGray1, keypoints1, temp1, -1, DrawMatchesFlags::DEFAULT);
-		imshow("origin", temp); // 显示
-		imshow("shift", temp1); // 显示
+		//drawKeypoints(imgGray,keypoints,temp,-1, DrawMatchesFlags::DEFAULT);
+		//drawKeypoints(imgGray1, keypoints1, temp1, -1, DrawMatchesFlags::DEFAULT);
+		//imshow("origin", temp); // 显示
+		//imshow("shift", temp1); // 显示
 
 
 		cout <<"the key points of imgGray: " <<  keypoints.size() << endl;
-		cout <<"the key points of imgGray1: " << keypoints1.size() << endl;
+		//cout <<"the key points of imgGray1: " << keypoints1.size() << endl;
 		Point2d phase_shift;
 		imgGray.convertTo(dst, CV_32FC1);
 		imgGray1.convertTo(dst1, CV_32FC1);
 		phase_shift = phaseCorrelate(dst, dst1); //get the shift degree
-		cout << endl << "warp :" << endl << "\tX shift : " << phase_shift.x << "\tY shift : " << phase_shift.y << endl;
+		//cout << endl << "warp :" << endl << "\tX shift : " << phase_shift.x << "\tY shift : " << phase_shift.y << endl;
 		drawMatches(imgGray, keypoints, imgGray, keypoints1, matches, temp2);
 		
-		imshow("compare", temp2);
+	
 		
-		
-//imshow("test", temp2);
+	imshow("test", temp2);
 		if (waitKey(1) == 27)		// delay ms 等待按键退出
 		{
 			break;
