@@ -7,6 +7,7 @@
 #include <opencv2/features2d/features2d.hpp>
 
 
+
 using namespace cv;
 using namespace std;
 
@@ -35,7 +36,7 @@ int main()
 		return -1;
 	}
 
-	Mat img,imgGray,img1,imgGray1,temp,temp1,dst,dst1;
+	Mat img,imgGray,img1,imgGray1,temp,temp1,temp2,dst,dst1;
 	int i = 0;
 	while (1)
 	{
@@ -51,51 +52,53 @@ int main()
 		{
 			cvtColor(img, imgGray, 7);
 			cvtColor(img1, imgGray1, 7);
-			imgGray.convertTo(dst, CV_32FC1);
-			imgGray1.convertTo(dst1, CV_32FC1);
+			
 		}
 		else
 		{
 			imgGray = img;
 			imgGray1 = img1;
-			imgGray.convertTo(dst, CV_32FC1);
-			imgGray1.convertTo(dst1, CV_32FC1);
 		}
+		
+		
+		
+		
 		vector<KeyPoint> keypoints;
 		vector<KeyPoint> keypoints1;
 
-		//FastFeatureDetector fast(imgGray,keypoints,40);
-		//fast.detect(imgGray, keypoints);
-		FAST(imgGray, keypoints, 10);
-		FAST(imgGray1, keypoints1, 10);
-		
+		Mat descriptors1, descriptors2;
+		Ptr<ORB> orb = ORB::create();
+		orb->detect(imgGray, keypoints);
+		orb->detect(imgGray1, keypoints1);
 
+		orb->compute(imgGray, keypoints, descriptors1);
+		orb->compute(imgGray1, keypoints1, descriptors2);
+
+		Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
+		vector< DMatch> matches;
+		matcher->match(descriptors1, descriptors2, matches);
+
+		cout << matches.size() << endl;
 
 		drawKeypoints(imgGray,keypoints,temp,-1, DrawMatchesFlags::DEFAULT);
 		drawKeypoints(imgGray1, keypoints1, temp1, -1, DrawMatchesFlags::DEFAULT);
-		
-		cout <<"the key points of imgGray: " <<  keypoints.size() << endl;
-		cout <<"the key points of imgGray1: " << keypoints1.size() << endl;
-
-		FlannBasedMatcher matcher;
-		vector<DMatch> matchPoints;
-		//matcher.match(imgGray,imgGray1,matchPoints,Mat());
-
-		//cout << "total match points : " << matchPoints.size() << endl;
-		//Point2d phase_shift;
-		//phase_shift = phaseCorrelate(dst1, dst); get the shift degree
-		/*
-		cout << endl << "warp :" << endl << "\tX shift : " << phase_shift.x << "\tY shift : " << phase_shift.y << endl;
-		double radius = sqrt(phase_shift.x * phase_shift.x + phase_shift.y * phase_shift.y);
-		if (radius > 1) {
-			Point center(imgGray.cols >> 1, imgGray.rows >> 1);
-			circle(img, center, (int)radius, Scalar(0, 255, 0), 3, LINE_AA);
-			line(img, center, Point(center.x + (int)phase_shift.x, center.y + (int)phase_shift.y), Scalar(0, 255, 0), 3, LINE_AA);
-		}
-		//phaseCorrelate(imgGray,imgGray1,NULL,0.5);*/
 		imshow("origin", temp); // 显示
 		imshow("shift", temp1); // 显示
-		imshow("test",img);
+
+
+		cout <<"the key points of imgGray: " <<  keypoints.size() << endl;
+		cout <<"the key points of imgGray1: " << keypoints1.size() << endl;
+		Point2d phase_shift;
+		imgGray.convertTo(dst, CV_32FC1);
+		imgGray1.convertTo(dst1, CV_32FC1);
+		phase_shift = phaseCorrelate(dst, dst1); //get the shift degree
+		cout << endl << "warp :" << endl << "\tX shift : " << phase_shift.x << "\tY shift : " << phase_shift.y << endl;
+		drawMatches(imgGray, keypoints, imgGray, keypoints1, matches, temp2);
+		
+		imshow("compare", temp2);
+		
+		
+//imshow("test", temp2);
 		if (waitKey(1) == 27)		// delay ms 等待按键退出
 		{
 			break;
