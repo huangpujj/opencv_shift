@@ -23,8 +23,8 @@ bool ArrayCheck(int a) {
 int main()
 {
 	VideoCapture capture,capture1;
-	capture.open("C:\\Users\\huang\\Desktop\\VS_repos\\videos\\original.avi"); // 打开摄像头
-	capture1.open("C:\\Users\\huang\\Desktop\\VS_repos\\videos\\shift.avi");
+	capture.open("C:\\Users\\huang\\Desktop\\VS_repos\\videos\\original_1.avi"); // 打开摄像头
+	capture1.open("C:\\Users\\huang\\Desktop\\VS_repos\\videos\\original_1.avi");
 	if (!capture.isOpened())
 	{
 		cout << "open camera failed. " << endl;
@@ -75,30 +75,54 @@ int main()
 		orb->compute(img, keypoints, descriptors1);
 		orb->compute(img1, keypoints1, descriptors2);
 
-		Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
+		Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
 		vector< DMatch> matches;
-		matcher->match(descriptors1, descriptors2, matches);
+		vector<vector<DMatch>> knnmatches;
+		
+		matcher->knnMatch(descriptors1, descriptors2, knnmatches, 2);
+
+		float min_dist = FLT_MAX;
+		for (int r = 0; r < knnmatches.size(); ++r)
+		{
+			//find the good matched
+			if (knnmatches[r][0].distance > 0.75 * knnmatches[r][1].distance)
+				continue;
+
+			float dist = knnmatches[r][0].distance;
+			if (dist < min_dist) min_dist = dist;
+		}
+
+		matches.clear();
+		for (size_t r = 0; r < knnmatches.size(); ++r)
+		{
+			if (knnmatches[r][0].distance > 0.6 * knnmatches[r][1].distance ||knnmatches[r][0].distance > 5 * max(min_dist, 10.0f))
+				continue;
+			matches.push_back(knnmatches[r][0]);
+		}
 
 		cout << "The matched pointed : " << matches.size() << endl;
-
-		//drawKeypoints(imgGray,keypoints,temp,-1, DrawMatchesFlags::DEFAULT);
-		//drawKeypoints(imgGray1, keypoints1, temp1, -1, DrawMatchesFlags::DEFAULT);
-		//imshow("origin", temp); // 显示
-		//imshow("shift", temp1); // 显示
-
-
 		cout <<"the key points of imgGray: " <<  keypoints.size() << endl;
-		//cout <<"the key points of imgGray1: " << keypoints1.size() << endl;
-		Point2d phase_shift;
-		imgGray.convertTo(dst, CV_32FC1);
-		imgGray1.convertTo(dst1, CV_32FC1);
-		phase_shift = phaseCorrelate(dst, dst1); //get the shift degree
-		//cout << endl << "warp :" << endl << "\tX shift : " << phase_shift.x << "\tY shift : " << phase_shift.y << endl;
-		drawMatches(imgGray, keypoints, imgGray, keypoints1, matches, temp2);
+		cout <<"the key points of imgGray1: " << (keypoints.size() <= keypoints1.size() ? keypoints.size() : keypoints1.size()) << endl;
+		drawMatches(img, keypoints, img1, keypoints1, matches, temp2);
+		if (matches.size() > 10 && !(matches.size() == (keypoints.size() <= keypoints1.size() ? keypoints.size() : keypoints1.size()))) {
+			Point2d phase_shift;
+			imgGray.convertTo(dst, CV_32FC1);
+			imgGray1.convertTo(dst1, CV_32FC1);
+			phase_shift = phaseCorrelate(dst, dst1); //get the shift degree
+			cout << endl << "warp :" << endl << "\tX shift : " << phase_shift.x << "\tY shift : " << phase_shift.y << endl;
+			cout << "shifted" << endl;
+		}
+		else if (matches.size() == (keypoints.size() <= keypoints1.size() ? keypoints.size() : keypoints1.size())) {
+			cout << "full matched" << endl;
+		}
+		else if(matches.size() <10) {
+			cout << "Not matched!" << endl;
+		}
+		
 		
 	
 		
-	imshow("test", temp2);
+		imshow("test", temp2);
 		if (waitKey(1) == 27)		// delay ms 等待按键退出
 		{
 			break;
